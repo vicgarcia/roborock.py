@@ -1,6 +1,6 @@
 services:
 
-  roborock:
+  cron:
     build: .
     image: roborock-cron:local
     restart: unless-stopped
