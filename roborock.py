@@ -314,8 +314,7 @@ class RoborockCLI:
     async def cmd_devices(self, args) -> None:
         devices = await self._manager.get_devices()
 
-        print("\nRoborock Devices:")
-        print("=" * 70)
+        print("Roborock Devices:")
         print()
 
         if not devices:
@@ -327,7 +326,6 @@ class RoborockCLI:
                 print(f"  {dev.name}{supported}")
                 print(f"    model: {dev.product.model}  duid: {dev.duid}  status: {connected}")
 
-        print(f"\n{'=' * 70}")
 
     async def cmd_status(self, args) -> None:
         device = await self.find_device(args.device)
@@ -337,8 +335,7 @@ class RoborockCLI:
         status = device.v1_properties.status
         await status.refresh()
 
-        print(f"\nStatus for {device.name}:")
-        print("=" * 70)
+        print(f"Status for {device.name}:")
         print()
         print(f"  State: {status.state_name or 'unknown'}")
         if status.battery is not None:
@@ -361,9 +358,6 @@ class RoborockCLI:
         if status.water_shortage_status:
             print("  Warning: water tank is low/empty")
 
-        print()
-        print("=" * 70)
-
     async def cmd_rooms(self, args) -> None:
         device = await self.find_device(args.device)
         if not device:
@@ -372,8 +366,7 @@ class RoborockCLI:
         rooms_trait = device.v1_properties.rooms
         await rooms_trait.refresh()
 
-        print(f"\nRooms for {device.name}:")
-        print("=" * 70)
+        print(f"Rooms for {device.name}:")
         print()
 
         if not rooms_trait.rooms:
@@ -382,7 +375,6 @@ class RoborockCLI:
             for room in sorted(rooms_trait.rooms, key=lambda r: r.name):
                 print(f"  {room.name} (segment: {room.segment_id})")
 
-        print(f"\n{'=' * 70}")
 
     async def cmd_clean(self, args) -> None:
         if args.passes < 1 or args.passes > 3:
@@ -568,8 +560,7 @@ class RoborockCLI:
         status = device.v1_properties.status
         await status.refresh()
 
-        print(f"\nSupported modes for {device.name}:")
-        print("=" * 70)
+        print(f"Supported modes for {device.name}:")
         print()
         print("  Fan power (--fan):")
         for code, mode_name in status.fan_speed_mapping.items():
@@ -580,8 +571,6 @@ class RoborockCLI:
         for code, mode_name in status.water_mode_mapping.items():
             current = "  <- current" if status.water_box_mode == code else ""
             print(f"    {mode_name} ({code}){current}")
-        print()
-        print("=" * 70)
 
     # === run ===
 
@@ -608,6 +597,7 @@ class RoborockCLI:
 
         try:
             if hasattr(args, 'func'):
+                print()  # output always starts on a fresh line after the command
                 await args.func(args)
             return 0
         finally:
