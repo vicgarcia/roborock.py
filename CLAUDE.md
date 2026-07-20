@@ -12,6 +12,7 @@ Supercronic (cron) → roborock.py CLI → Roborock Cloud MQTT → Vacuum
 
 - The Dockerfile COPYs `roborock.py` from the repo into `~/.local/bin` (no downloads) and pre-warms uv deps with `roborock.py --help`
 - `ROBOROCK_CACHE_DIR=/data` is set in the image; compose binds `./data:/data`, so the container uses tokens generated locally with `ROBOROCK_CACHE_DIR=./data ./roborock.py login`
+- Bind mount permissions follow the groundskeeper pattern: `HOST_UID`/`HOST_GID` are set in `.env` (passed via `env_file`, no compose `environment` block needed), and `entrypoint.sh` (running as root) remaps the `app` user with `usermod` — creating the group first if the GID doesn't exist, since it may collide (GID 20 is "dialout" in debian, "staff" on macOS hosts) — re-owns `/home/app` so uv keeps its dep cache, then `exec gosu app "$@"`. The vars are named HOST_* (not UID/GID) because bash reserves `$UID` as readonly and would shadow an inherited UID env var in the entrypoint
 - Crontab entries call `roborock.py` directly — no wrapper scripts
 - The container never logs in (two-step verification is interactive-only); it only ever reads the bind-mounted tokens
 - Cloud MQTT means no host networking (unlike the lifx container, which needs LAN discovery)

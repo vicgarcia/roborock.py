@@ -134,7 +134,7 @@ ROBOROCK_CACHE_DIR=./data ./roborock.py login
 
 # 2. configure environment
 cp .env.example .env
-# edit .env: TZ and ROBOROCK_EMAIL
+# edit .env: TZ, ROBOROCK_EMAIL, and HOST_UID/HOST_GID (id -u / id -g)
 
 # 3. define the schedule
 # edit crontab (examples included, all commented out)
@@ -145,14 +145,17 @@ docker compose up -d --build
 
 The compose file binds `./data` to `/data` in the container (`ROBOROCK_CACHE_DIR=/data` is set in the image), so the container uses the tokens you generated locally and persists its home-data cache alongside them. To use a different directory, change the bind in `docker-compose.yml`.
 
+At startup the entrypoint remaps the container's `app` user to the `HOST_UID`/`HOST_GID` from `.env`, then drops privileges via `gosu` — this keeps the bind-mounted `./data` readable/writable from both sides regardless of your host uid.
+
 ### Container Files
 
 | File | Purpose |
 |------|---------|
 | `Dockerfile` | Debian slim + uv + Supercronic + roborock.py (copied from repo) |
 | `docker-compose.yml` | Service definition, binds `./data:/data` |
+| `entrypoint.sh` | Remaps the container user to `HOST_UID`/`HOST_GID` for bind mount permissions |
 | `crontab` | Schedule — edit times and tasks here |
-| `.env` | `TZ` and `ROBOROCK_EMAIL` |
+| `.env` | `TZ`, `ROBOROCK_EMAIL`, `HOST_UID`, `HOST_GID` |
 | `data/` | Token + device cache (gitignored, created by login) |
 
 ### Managing the Container
@@ -176,6 +179,8 @@ After editing `crontab`, rebuild: `docker compose up -d --build`.
 ### Troubleshooting
 
 **"no cached auth and no password"**: no tokens in the bound directory — run step 1 above and confirm `data/.roborock.json` exists.
+
+**"Permission denied: '/data/.roborock.json'"**: the container user's uid doesn't match the file owner — set `HOST_UID`/`HOST_GID` in `.env` to your host user's values (`id -u` / `id -g`) and `docker compose up -d --force-recreate`.
 
 **Rate limit errors**: the API allows ~5 home-data fetches/hour. The cache in `data/` avoids this — don't delete it or hammer manual commands with a cold cache.
 
