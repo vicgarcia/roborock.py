@@ -1,0 +1,14 @@
+# Roborock Cleaning Schedule
+# Supercronic logs all output to stdout/stderr automatically
+# Times run in the TZ configured in .env
+#
+# The Roborock app only supports simple schedules - specialized cleaning
+# tasks live here, composed directly from roborock.py commands.
+#
+# Examples (uncomment / edit to build the schedule):
+#
+# Weekday morning high-traffic clean: kitchen + hallway, 2 passes, no mop
+# 0 10 * * 1-5 roborock.py clean --rooms Kitchen Hallway --passes 2 --fan balanced --water off
+#
+# Weekly deep clean: whole home, max suction, mopping
+# 0 10 * * 6 roborock.py clean --passes 1 --fan max --water medium

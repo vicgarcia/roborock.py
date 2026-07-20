@@ -1,0 +1,12 @@
+services:
+
+  roborock:
+    build: .
+    image: roborock-cron:local
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # bind the directory holding .roborock.json / .roborock.cache
+      # generate tokens locally first: ROBOROCK_CACHE_DIR=./data roborock.py login
+      - ./data:/data
