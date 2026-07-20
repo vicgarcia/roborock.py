@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     bash \
     ca-certificates \
     curl \
+    gosu \
     jq \
     && rm -rf /var/lib/apt/lists/*
 
@@ -28,6 +29,10 @@ RUN curl -fsSLO "$SUPERCRONIC_URL" \
 RUN mkdir -p /data && chown app:app /data
 ENV ROBOROCK_CACHE_DIR=/data
 
+# copy entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # switch to app user
 USER app
 WORKDIR /home/app
@@ -46,6 +51,13 @@ RUN chmod +x /home/app/.local/bin/roborock.py
 # pre-install roborock dependencies by running help
 RUN roborock.py --help
 
-# run supercronic
+# copy crontab for scheduled tasks
 COPY --chown=app:app crontab /crontab
+
+# switch to root to execute entrypoint.sh, which remaps app user to the
+# host uid/gid then drops back to app via gosu
+USER root
+ENTRYPOINT ["/entrypoint.sh"]
+
+# run supercronic as the main process
 CMD ["supercronic", "/crontab"]
