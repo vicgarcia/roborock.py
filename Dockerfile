@@ -51,13 +51,11 @@ RUN chmod +x /home/app/.local/bin/roborock.py
 # pre-install roborock dependencies by running help
 RUN roborock.py --help
 
-# copy crontab for scheduled tasks
-COPY --chown=app:app crontab /crontab
-
 # switch to root to execute entrypoint.sh, which remaps app user to the
 # host uid/gid then drops back to app via gosu
 USER root
 ENTRYPOINT ["/entrypoint.sh"]
 
 # run supercronic as the main process
-CMD ["supercronic", "/crontab"]
+# -inotify reloads the schedule automatically when the crontab file changes
+CMD ["supercronic", "-inotify", "/crontab"]

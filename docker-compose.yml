@@ -10,3 +10,5 @@ services:
       # bind the directory holding .roborock.json / .roborock.cache
       # generate tokens locally first: ROBOROCK_CACHE_DIR=./data roborock.py login
       - ./data:/data
+      # bind the schedule so it can be edited without rebuilding the image
+      - ./crontab:/crontab:ro
