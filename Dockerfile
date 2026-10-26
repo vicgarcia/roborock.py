@@ -58,4 +58,4 @@ ENTRYPOINT ["/entrypoint.sh"]
 
 # run supercronic as the main process
 # -inotify reloads the schedule automatically when the crontab file changes
-CMD ["supercronic", "-inotify", "/crontab"]
+CMD ["supercronic", "-inotify", "/roborock/crontab"]

@@ -125,7 +125,7 @@ The repo includes a cron container that runs `roborock.py` commands on a schedul
 Supercronic (cron) → roborock.py CLI → Roborock Cloud MQTT → Vacuum
 ```
 
-The container installs `roborock.py` from the repo at build time (COPY, no downloads) and reads auth tokens and the crontab from bind-mounted files, so editing the schedule never requires a rebuild. Setup:
+The container installs `roborock.py` from the repo at build time (COPY, no downloads) and reads auth tokens and the crontab from bind mounts, so editing the schedule never requires a rebuild. Setup:
 
 ```bash
 # 1. generate tokens into ./data (one-time interactive login)
@@ -145,9 +145,9 @@ cp crontab.template crontab
 docker compose up -d --build
 ```
 
-The compose file binds `./data` to `/data` (`ROBOROCK_CACHE_DIR=/data` is set in the image) and `./crontab` to `/crontab`, so the container uses the tokens you generated locally, persists its home-data cache alongside them, and reads the schedule straight from the repo checkout. To use a different directory, change the bind in `docker-compose.yml`.
+The compose file binds `./data` to `/data` (`ROBOROCK_CACHE_DIR=/data` is set in the image) and the repo directory read-only to `/roborock` (the crontab is read from `/roborock/crontab`), so the container uses the tokens you generated locally, persists its home-data cache alongside them, and reads the schedule straight from the repo checkout. To use a different directory, change the bind in `docker-compose.yml`.
 
-Supercronic runs with `-inotify`, so it watches `/crontab` and reloads automatically when the file changes - no restart needed after editing the schedule.
+Supercronic runs with `-inotify`, so it watches `/roborock/crontab` and reloads automatically when the file changes - no restart needed after editing the schedule, with any editor.
 
 At startup the entrypoint remaps the container's `app` user to the `HOST_UID`/`HOST_GID` from `.env`, then drops privileges via `gosu` — this keeps the bind-mounted `./data` readable/writable from both sides regardless of your host uid.
 
@@ -156,7 +156,7 @@ At startup the entrypoint remaps the container's `app` user to the `HOST_UID`/`H
 | File | Purpose |
 |------|---------|
 | `Dockerfile` | Debian slim + uv + Supercronic + roborock.py (copied from repo) |
-| `docker-compose.yml` | Service definition, binds `./data:/data` and `./crontab:/crontab` |
+| `docker-compose.yml` | Service definition, binds `./data:/data` and the repo directory read-only at `/roborock` |
 | `entrypoint.sh` | Remaps the container user to `HOST_UID`/`HOST_GID` for bind mount permissions |
 | `crontab.template` | Template schedule, tracked in git |
 | `crontab` | Your schedule — edit times and tasks here (gitignored, copy from `crontab.template`) |
@@ -173,7 +173,7 @@ docker compose up -d --build
 docker compose logs -f
 
 # run a command manually inside the container
-docker compose exec roborock roborock.py status
+docker compose exec cron roborock.py status
 
 # stop
 docker compose down
