@@ -101,11 +101,6 @@ Never hardcode fan/water codes. `StatusTrait` exposes per-device mappings derive
 - Status refresh right after `app_segment_clean` reflects the new state within ~5 seconds.
 - The Q7 Max reports state `charging` when docked, `charging_complete` never observed (100% still shows `charging`).
 
-## Test device
-
-- `Q7 Max` — model `roborock.vacuum.a38`, duid `455ktGpJyMugzLfjUnNOkV`
-- Rooms: Kitchen (16), Passage (17), Dining (18), Hallway (19), Master (21), Living (22)
-
 ## IDE import warning
 
 The IDE warns that `roborock.*` imports can't be resolved. Expected — the package is installed at runtime by `uv run --script`, not in the local environment.
